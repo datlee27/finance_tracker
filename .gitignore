@@ -1,0 +1,36 @@
+# OS files
+.DS_Store
+**/.DS_Store
+
+# Block docs and exam question materials
+docs/
+**/docs/
+*.doc
+*.docx
+*.zip
+extracted_src/
+
+# Block Firebase keys and sensitive credentials
+**/firebase_options.dart
+**/google-services.json
+**/GoogleService-Info.plist
+**/*.env
+**/*.env.*
+**/*.jks
+**/*.keystore
+
+# Flutter / Dart build artifacts
+**/build/
+**/.dart_tool/
+**/.pub-cache/
+**/.pub/
+**/.flutter-plugins-dependencies
+**/.flutter-plugins
+
+# IDE
+.idea/
+**/.idea/
+*.iml
+**/*.iml
+.vscode/
+**/.vscode/

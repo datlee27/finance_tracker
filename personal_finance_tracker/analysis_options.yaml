@@ -1,0 +1,37 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    # Dart style
+    prefer_const_constructors: true
+    prefer_const_declarations: true
+    prefer_final_fields: true
+    prefer_final_locals: false
+    use_super_parameters: true
+    unnecessary_this: true
+
+    # Naming
+    file_names: true
+
+    # Async
+    unawaited_futures: true
+    cancel_subscriptions: true
+
+    # Performance
+    avoid_unnecessary_containers: true
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
+  errors:
+    missing_required_param: error
+    missing_return: error
+    todo: ignore

@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Mặc định từ chối tất cả
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Chỉ cho phép user đọc/ghi dữ liệu của chính mình
+    match /users/{uid}/transactions/{transactionId} {
+      // Điều kiện xác thực cơ bản
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+
+      // Create: kiểm tra amount > 0 và type hợp lệ
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.amount is number
+        && request.resource.data.amount > 0
+        && request.resource.data.type in ['income', 'expense'];
+
+      // Update: kiểm tra tương tự create
+      allow update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.amount is number
+        && request.resource.data.amount > 0
+        && request.resource.data.type in ['income', 'expense'];
+    }
+  }
+}
