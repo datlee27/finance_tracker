@@ -40,3 +40,4 @@ cd personal_finance_tracker
 flutter pub get
 flutter run
 ```
+
