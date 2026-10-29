@@ -1,0 +1,53 @@
+name: Build iOS IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'README.md'
+      - '.gitignore'
+
+jobs:
+  build_ipa:
+    name: Build Unsigned IPA
+    runs-on: macos-14
+
+    defaults:
+      run:
+        working-directory: personal_finance_tracker
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Mock Firebase Config
+        run: |
+          cp lib/firebase_options.dart.example lib/firebase_options.dart
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build iOS App (.app)
+        run: |
+          flutter build ios --release --no-codesign
+
+      - name: Package .ipa
+        run: |
+          mkdir -p Payload
+          cp -r build/ios/iphoneos/Runner.app Payload/
+          zip -r personal_finance_tracker.ipa Payload
+          mv personal_finance_tracker.ipa build/
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: personal_finance_tracker_ipa
+          path: personal_finance_tracker/build/personal_finance_tracker.ipa
+          retention-days: 14
