@@ -10,11 +10,19 @@ class FirestoreTransactionDataSource {
   FirestoreTransactionDataSource({FirebaseFirestore? firestore})
       : _customFirestore = firestore;
 
-  FirebaseFirestore get _firestore =>
-      _customFirestore ?? FirebaseFirestore.instance;
+  FirebaseFirestore? get _firestore {
+    if (_customFirestore != null) return _customFirestore;
+    try {
+      return FirebaseFirestore.instance;
+    } catch (_) {
+      return null;
+    }
+  }
 
-  CollectionReference<Map<String, dynamic>> _userTransactionsRef(String uid) {
-    return _firestore
+  CollectionReference<Map<String, dynamic>>? _userTransactionsRef(String uid) {
+    final firestore = _firestore;
+    if (firestore == null) return null;
+    return firestore
         .collection(FirestoreConstants.usersCollection)
         .doc(uid)
         .collection(FirestoreConstants.transactionsCollection);
@@ -23,7 +31,11 @@ class FirestoreTransactionDataSource {
   /// Stream lắng nghe toàn bộ giao dịch theo thời gian thực của user
   Stream<List<TransactionModel>> getTransactionsStream(String uid) {
     try {
-      return _userTransactionsRef(uid)
+      final ref = _userTransactionsRef(uid);
+      if (ref == null) {
+        return Stream.value([]);
+      }
+      return ref
           .orderBy(FirestoreConstants.fieldDate, descending: true)
           .snapshots()
           .map((snapshot) {
@@ -41,8 +53,12 @@ class FirestoreTransactionDataSource {
     String uid,
     TransactionModel transaction,
   ) async {
+    final ref = _userTransactionsRef(uid);
+    if (ref == null) {
+      throw const AppException('Dịch vụ Firestore chưa sẵn sàng hoặc đang ở chế độ ngoại tuyến.');
+    }
     try {
-      final docRef = _userTransactionsRef(uid).doc();
+      final docRef = ref.doc();
       final modelToSave = transaction.copyWith(
         id: docRef.id,
         userId: uid,
@@ -61,10 +77,12 @@ class FirestoreTransactionDataSource {
     String uid,
     TransactionModel transaction,
   ) async {
+    final ref = _userTransactionsRef(uid);
+    if (ref == null) {
+      throw const AppException('Dịch vụ Firestore chưa sẵn sàng.');
+    }
     try {
-      await _userTransactionsRef(uid)
-          .doc(transaction.id)
-          .update(transaction.toFirestore());
+      await ref.doc(transaction.id).update(transaction.toFirestore());
     } catch (e) {
       throw AppException('Lỗi khi cập nhật giao dịch: $e');
     }
@@ -72,8 +90,12 @@ class FirestoreTransactionDataSource {
 
   /// Xóa giao dịch khỏi Firestore
   Future<void> deleteTransaction(String uid, String transactionId) async {
+    final ref = _userTransactionsRef(uid);
+    if (ref == null) {
+      throw const AppException('Dịch vụ Firestore chưa sẵn sàng.');
+    }
     try {
-      await _userTransactionsRef(uid).doc(transactionId).delete();
+      await ref.doc(transactionId).delete();
     } catch (e) {
       throw AppException('Lỗi khi xóa giao dịch: $e');
     }

@@ -22,13 +22,18 @@ void main() async {
     debugPrint('DateFormatting init log: $e');
   }
 
-  // Khởi tạo Firebase với options hỗ trợ đa nền tảng
+  // Khởi tạo Firebase với options hỗ trợ đa nền tảng (an toàn, không crash khi chưa có key thật)
   try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    final options = DefaultFirebaseOptions.currentPlatform;
+    if (!options.apiKey.contains('YOUR_API_KEY') && options.apiKey.trim().isNotEmpty) {
+      await Firebase.initializeApp(
+        options: options,
+      );
+    } else {
+      debugPrint('Firebase options placeholder detected, running in safe offline/guest mode.');
+    }
   } catch (e) {
-    debugPrint('Firebase init log: $e');
+    debugPrint('Firebase init error (handled safely): $e');
   }
 
   // Khởi tạo danh mục tùy chỉnh
